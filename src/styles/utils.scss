@@ -1,0 +1,34 @@
+$xs: 4px;
+$sm: 8px;
+$md: 16px;
+$lg: 24px;
+$xl: 48px;
+
+.clearfix {
+  &::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 0;
+    clear: both;
+  }
+}
+
+.p-sm {
+  padding: $sm;
+}
+.p-md {
+  padding: $md;
+}
+.p-lg {
+  padding: $lg;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-center {
+  justify-content: center;
+  align-items: center;
+}
