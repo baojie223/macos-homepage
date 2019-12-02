@@ -3,21 +3,24 @@
     <div class="main p-md d-flex" style="flex-direction: column">
       <div class="top">
         <el-avatar src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"></el-avatar>
+        <span>{{ name }}</span>
       </div>
       <div
         class="middle"
         style="height: 100%; background: #eee; margin: 16px 0; overflow-y: scroll; overflow-x: hidden"
       >
         <template v-for="item in data">
-          <div v-if="item.name === user" :key="item.time" class="msg-box right">
+          <div v-if="item.name === name" :key="item.time" class="msg-box right">
             <p>{{ item.msg }}</p>
             <div class="triangle-right"></div>
             <el-avatar :src="item.avatar" size="small" class="avatar-right"></el-avatar>
+            <span class="name">{{ item.name }}</span>
           </div>
           <div v-else class="msg-box left" :key="item.time">
             <p>{{ item.msg }}</p>
             <div class="triangle-left"></div>
             <el-avatar :src="item.avatar" size="small" class="avatar-left"></el-avatar>
+            <span class="name">{{ item.name }}</span>
           </div>
         </template>
       </div>
@@ -32,37 +35,50 @@
         <el-button circle icon="iconfont icon-send" @click="send"></el-button>
       </div>
     </div>
+    <el-dialog title="提示" :visible.sync="dialogVisible" width="30%" :before-close="beforeClose">
+      <el-input v-model="name" placeholder="请输入你的昵称"></el-input>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import 'socket.io'
 const data = []
 export default {
   name: 'home',
   data() {
     return {
       input: '',
-      user: 'bao',
+      name: '',
       data,
-      ws: null
+      ws: null,
+      dialogVisible: true,
+      socket: null
     }
   },
   created() {
-    this.ws = new WebSocket('ws://localhost:3001')
-    this.ws.onmessage = msg => {
-      console.log(msg)
-      // this.data = JSON.parse(msg)
-    }
-    this.ws.addEventListener('open', () => {
-      this.ws.send(location.href)
-    })
+    // this.ws = new WebSocket('ws://localhost:3001')
+    // this.ws.addEventListener('open', () => {
+    //   this.ws.send('init')
+    // })
+    // this.ws.addEventListener('message', msg => {
+    //   this.data = JSON.parse(msg.data)
+    // })
   },
   methods: {
+    initSocket() {
+      // eslint-disable-next-line no-undef
+      this.socket = io.connect('ws://localhost:3001')
+    },
     send(e) {
       console.log(e)
-      this.ws.send(
+      this.socket.emit(
+        'chat message',
         JSON.stringify({
-          name: this.user,
+          name: this.name,
           msg: this.input,
           time: Date.now(),
           avatar:
@@ -71,6 +87,13 @@ export default {
       )
       this.input = ''
       this.$refs.input.blur()
+    },
+    beforeClose(done) {
+      if (this.name) {
+        done()
+      } else {
+        this.$message('取一个名字吧~')
+      }
     }
   }
 }
@@ -113,7 +136,7 @@ export default {
   background-color: #eee;
   border-radius: 30px;
   box-shadow: $--box-shadow-light;
-  color: $geekblue-5;
+  // color: $geekblue-5;
 }
 .msg-box {
   position: relative;
@@ -157,5 +180,10 @@ export default {
   position: absolute;
   right: -40px;
   top: calc(50% - 15px);
+}
+.name {
+  position: absolute;
+  top: -24px;
+  left: 50%;
 }
 </style>
