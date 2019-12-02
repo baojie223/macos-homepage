@@ -11,5 +11,8 @@ module.exports = {
         prependData: `@import './src/styles/element-variables.scss'; ${colorVars}`
       }
     }
+  },
+  proxy: {
+    
   }
 }

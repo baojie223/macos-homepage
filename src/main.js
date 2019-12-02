@@ -6,9 +6,9 @@ import store from "./store";
 
 import './styles/index.scss'
 
-import { Button, Input } from 'element-ui'
+import { Button, Input, Icon, Avatar } from 'element-ui'
 import BIcon from './components/BIcon.vue'
-Vue.use(Button).use(Input)
+Vue.use(Button).use(Input).use(Icon).use(Avatar)
 Vue.component('b-icon', BIcon)
 
 Vue.config.productionTip = false;
