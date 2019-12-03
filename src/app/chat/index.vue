@@ -11,13 +11,13 @@
       >
         <template v-for="item in data">
           <div v-if="item.name === name" :key="item.time" class="msg-box right">
-            <p>{{ item.msg }}</p>
+            <p>{{ item.data }}</p>
             <div class="triangle-right"></div>
             <el-avatar :src="item.avatar" size="small" class="avatar-right"></el-avatar>
             <span class="name">{{ item.name }}</span>
           </div>
           <div v-else class="msg-box left" :key="item.time">
-            <p>{{ item.msg }}</p>
+            <p>{{ item.data }}</p>
             <div class="triangle-left"></div>
             <el-avatar :src="item.avatar" size="small" class="avatar-left"></el-avatar>
             <span class="name">{{ item.name }}</span>
@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import 'socket.io'
+import io from 'socket.io-client'
 const data = []
 export default {
   name: 'home',
@@ -56,35 +56,52 @@ export default {
       data,
       ws: null,
       dialogVisible: true,
-      socket: null
+      socket: null,
+      unloadEvent: null
     }
   },
   created() {
-    // this.ws = new WebSocket('ws://localhost:3001')
-    // this.ws.addEventListener('open', () => {
-    //   this.ws.send('init')
-    // })
-    // this.ws.addEventListener('message', msg => {
-    //   this.data = JSON.parse(msg.data)
-    // })
+    this.initSocket()
+  },
+  beforeDestroy() {
+    window.removeEventListener('load', this.enter)
+    window.removeEventListener('unload', this.leave)
   },
   methods: {
     initSocket() {
-      // eslint-disable-next-line no-undef
-      this.socket = io.connect('ws://localhost:3001')
+      this.socket = io('http://localhost:3000')
+
+      this.socket.on('update', msg => {
+        // console.log(msg)
+        this.data = msg
+      })
+
+      this.socket.on('someone enter', name => {
+        this.$message(`${name}来啦~`)
+        console.log(name + 'entered')
+      })
+      this.socket.on('someone leave', name => {
+        this.$message(`${name} 溜了~`)
+      })
+
+      window.addEventListener('unload', this.leave)
+      window.addEventListener('load', this.enter)
     },
-    send(e) {
-      console.log(e)
-      this.socket.emit(
-        'chat message',
-        JSON.stringify({
-          name: this.name,
-          msg: this.input,
-          time: Date.now(),
-          avatar:
-            'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
-        })
-      )
+    enter() {
+      this.socket.emit('enter', this.name)
+    },
+    leave() {
+      this.socket.emit('leave', this.name)
+    },
+    send() {
+      const msg = {
+        name: this.name,
+        avatar:
+          'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+        time: Date.now(),
+        data: this.input
+      }
+      this.socket.emit('update', msg)
       this.input = ''
       this.$refs.input.blur()
     },
