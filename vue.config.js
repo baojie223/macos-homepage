@@ -5,6 +5,9 @@ const colorVars = geekblue.reduce((prev, curr, i) => {
 }, '')
 
 module.exports = {
+  devServer: {
+    port: 4000
+  },
   css: {
     loaderOptions: {
       sass: {

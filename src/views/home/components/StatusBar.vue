@@ -12,6 +12,11 @@ export default {
 
 <style lang="scss" scoped>
 .status-bar {
-
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background-color: #1d2635;
 }
 </style>

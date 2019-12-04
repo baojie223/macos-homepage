@@ -1,15 +1,19 @@
 <template>
   <div class="home">
     <status-bar />
+    <background />
+    <app-bar />
   </div>
 </template>
 
 <script>
-import { StatusBar } from './components'
+import { StatusBar, AppBar, Background } from './components'
 export default {
   name: 'home',
   components: {
-    StatusBar
+    StatusBar,
+    AppBar,
+    Background
   }
 }
 </script>
