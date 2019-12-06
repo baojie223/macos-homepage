@@ -1,6 +1,10 @@
 @import '~normalize.css';
 @import './utils.scss';
 
+@font-face {
+  font-family: PingFang SC;
+  src: url('/PingFang.ttf')
+}
 
 * {
   margin: 0;
@@ -11,6 +15,7 @@ html,
 body,
 #app {
   height: 100%;
+  font-family: PingFang SC;
 }
 
 ul {

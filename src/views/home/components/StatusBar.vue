@@ -16,7 +16,9 @@ export default {
   top: 0;
   left: 0;
   right: 0;
+  z-index: 100;
   height: 32px;
   background-color: #1d2635;
+  box-shadow: $--box-shadow-light;
 }
 </style>
