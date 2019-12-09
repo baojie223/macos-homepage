@@ -4,7 +4,7 @@
       <div :style="menuStyle">
         <ul class="menus">
           <li class="menu-item" @click="changeBackground">桌面壁纸</li>
-          <li class="menu-item">还有</li>
+          <li class="menu-item" @click="openChat">还有</li>
         </ul>
       </div>
     </my-mask>
@@ -44,6 +44,10 @@ export default {
     changeBackground() {
       console.log(1)
       this.ADD_APP('bg-setting')
+      this.$refs.mask.close()
+    },
+    openChat() {
+      this.ADD_APP('chat')
       this.$refs.mask.close()
     }
   }
