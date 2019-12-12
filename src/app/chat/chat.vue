@@ -1,5 +1,5 @@
 <template>
-  <universal-container>
+  <box>
     <div>
       <el-button @click="onRoomsShow">rooms</el-button>
       <el-button @click="onContactsShow">contacts</el-button>
@@ -10,7 +10,7 @@
       </div>
       <div class="right"></div>
     </div>
-  </universal-container>
+  </box>
 </template>
 
 <script>

@@ -12,11 +12,13 @@ export default {
 
 <style lang="scss" scoped>
 .status-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
+  // position: fixed;
+  // top: 0;
+  // left: 0;
+  // right: 0;
+  // z-index: 100;
+  position: relative;
+  z-index: 10;
   height: 32px;
   background-color: #1d2635;
   box-shadow: $--box-shadow-light;

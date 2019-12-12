@@ -56,10 +56,9 @@ export default {
 
 <style lang="scss" scoped>
 .background {
-  position: relative;
   height: 100%;
-  padding-top: 32px;
-  transition: background .3s;
+  position: relative;
+  // transition: background .3s;
   overflow: hidden;
 }
 .menus {

@@ -1,5 +1,5 @@
 <template>
-  <universal-container app="bg-setting">
+  <box app="bg-setting">
     <div class="main">
       <div>
         <span>背景色：</span>
@@ -19,7 +19,7 @@
         ></my-upload>
       </div>
     </div>
-  </universal-container>
+  </box>
 </template>
 
 <script>
