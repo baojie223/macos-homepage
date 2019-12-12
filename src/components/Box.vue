@@ -98,11 +98,11 @@ export default {
       // } = this.$refs.box.getBoundingClientRect()
       // this.left = left
       // this.width = width
-      this.$refs.mask.$el.style.cursor = 'pointer'
-      this.$refs.mask.open()
-      const { $el: mask } = this.$refs.mask
-      mask.addEventListener('mousemove', this.move)
-      mask.addEventListener('mouseup', this.up)
+      // this.$refs.mask.$el.style.cursor = 'pointer'
+      // this.$refs.mask.open()
+      // const { $el: mask } = this.$refs.mask
+      document.addEventListener('mousemove', this.move)
+      document.addEventListener('mouseup', this.up)
     },
     onResizeStart() {
       console.log()
@@ -148,8 +148,8 @@ export default {
       }
     },
     up() {
-      const { $el: mask } = this.$refs.mask
-      mask.removeEventListener('mousemove', this.move)
+      // const { $el: mask } = this.$refs.mask
+      document.removeEventListener('mousemove', this.move)
     }
   }
 }
@@ -168,6 +168,7 @@ export default {
   // height: 600px;
   border-radius: $radius;
   box-shadow: $shadow;
+  overflow: hidden;
   transition: all 0.3s ease;
   .drag-header {
     display: flex;
