@@ -1,6 +1,6 @@
 <template>
   <div :id="id" class="box" ref="box">
-    <div class="drag-header" @click.prevent="() => void 0" @mousedown="onMouseDown($event)">
+    <div class="drag-header" @click.prevent="() => void 0" ref="dragHeader">
       <span class="dot-red" @click="onClose"></span>
       <span class="dot-yellow" @click="onScale"></span>
       <span class="dot-green" @click="onHidden"></span>
@@ -22,6 +22,9 @@
 </template>
 
 <script>
+// import * as Rx from 'rxjs'
+import { fromEvent } from 'rxjs'
+import { map, takeUntil, concatAll } from 'rxjs/operators'
 export default {
   name: '',
   props: {
@@ -34,36 +37,72 @@ export default {
     return {
       initialX: 0,
       initialY: 0,
-      isDrag: false,
       position: {},
       pos: {},
-      id: Date.now(),
-      left: 0,
-      width: 0,
-      realLeft: 'calc(50% - 400px)',
-      activeBoundary: null
+      id: 'box-' + Date.now(),
+      activeBoundary: null,
+      isActive: false
     }
   },
+  watch: {
+    isActive(newVal) {
+      if (newVal) {
+        this.$refs.box.style.zIndex = 50
+      } else {
+        this.$refs.box.style.zIndex = 49
+      }
+    }
+  },
+  mounted() {
+    const box = this.$el
+    const body = document.body
+    const dragHeader = this.$refs.dragHeader
+    const mouseDown = fromEvent(dragHeader, 'mousedown')
+    const mouseMove = fromEvent(body, 'mousemove')
+    const mouseUp = fromEvent(body, 'mouseup')
+
+    mouseDown
+      .pipe(
+        map(e => {
+          const { left, top } = box.getBoundingClientRect()
+          this.initialX = e.clientX - left
+          this.initialY = e.clientY - top
+          return mouseMove.pipe(takeUntil(mouseUp))
+        }),
+        concatAll(),
+        map(event => ({ x: event.clientX, y: event.clientY }))
+      )
+      // .map(() => mouseMove.takeUntil(mouseUp))
+      // .concatAll()
+      // .map(event => ({ x: event.clientX, y: event.clientY }))
+      .subscribe(pos => {
+        box.style.left = `${pos.x - this.initialX}px`
+        box.style.top = `${
+          pos.y - this.initialY > 32 ? pos.y - this.initialY : 32
+        }px`
+      })
+  },
   methods: {
-    onMouseDown(ev) {
+    onDrag(ev) {
       const { box } = this.$refs
       const { left, top } = box.getBoundingClientRect()
       this.initialX = ev.clientX - left
       this.initialY = ev.clientY - top
-      this.isDrag = true
-      document.addEventListener('mousemove', this.onMouseMove)
-      document.addEventListener('mouseup', this.onMouseUp)
+      this.isActive = true
+      document.addEventListener('mousemove', this.dragMove)
+      document.addEventListener('mouseup', this.dragUp)
     },
-    onMouseMove(ev) {
+    dragMove(ev) {
       const { box } = this.$refs
       box.style.left = `${ev.clientX - this.initialX}px`
       box.style.top = `${
         ev.clientY - this.initialY > 32 ? ev.clientY - this.initialY : 32
       }px`
     },
-    onMouseUp() {
-      document.removeEventListener('mousemove', this.onMouseMove)
-      document.removeEventListener('mouseup', this.onMouseUp)
+    dragUp() {
+      this.isActive = false
+      document.removeEventListener('mousemove', this.dragMove)
+      document.removeEventListener('mouseup', this.dragUp)
     },
     onScale() {
       const { classList } = this.$refs.box
@@ -88,30 +127,22 @@ export default {
     },
     onResize(e, direction) {
       this.activeBoundary = direction
-      // console.log(e)
-      // const {
-      //   left,
-      //   right,
-      //   top,
-      //   bottom,
-      //   width
-      // } = this.$refs.box.getBoundingClientRect()
-      // this.left = left
-      // this.width = width
-      // this.$refs.mask.$el.style.cursor = 'pointer'
-      // this.$refs.mask.open()
-      // const { $el: mask } = this.$refs.mask
-      document.addEventListener('mousemove', this.move)
-      document.addEventListener('mouseup', this.up)
+      this.$refs.mask.open()
+      this.$nextTick(() => {
+        console.log(this.$refs.mask)
+        const mask = this.$refs.mask.$el
+        console.log(mask)
+        mask.addEventListener('mousemove', this.resizeMove)
+        mask.addEventListener('mouseup', this.resizeUp)
+      })
     },
-    onResizeStart() {
-      console.log()
-    },
-    move(e) {
-      const { box } = this.$refs
+    resizeMove(e) {
+      console.log(e)
+      // const { box } = this.$refs
+      const box = document.querySelector(`#${this.id}`)
       switch (this.activeBoundary) {
         case 'l':
-          box.style.left = `${e.clientX}px`
+          box.style.left = `${e.x}px`
           break
         case 'r':
           box.style.right = `${document.documentElement.clientWidth -
@@ -146,10 +177,15 @@ export default {
           break
         default:
       }
+      // document.addEventListener('mouseup', this.resizeUp)
     },
-    up() {
+    resizeUp() {
       // const { $el: mask } = this.$refs.mask
-      document.removeEventListener('mousemove', this.move)
+      // console.log(mask)
+      const mask = this.$refs.mask.$el
+      mask.removeEventListener('mousemove', this.move)
+      mask.removeEventListener('mouseup', this.resizeUp)
+      this.$refs.mask.close()
     }
   }
 }
