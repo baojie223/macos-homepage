@@ -24,6 +24,11 @@
 
 <script>
 export default {
+  // provide() {
+  //   return {
+  //     size: this.size
+  //   }
+  // },
   name: '',
   props: {
     app: {
@@ -37,11 +42,12 @@ export default {
       initialY: 0,
       initialW: 0,
       initialH: 0,
-      position: {},
-      pos: {},
       id: 'box-' + Date.now(),
       activeBoundary: null,
-      isActive: false
+      isActive: false,
+      size: {
+        height: 600
+      }
     }
   },
   watch: {
@@ -102,47 +108,61 @@ export default {
       this.activeBoundary = direction
       this.$refs.mask.open()
       this.$nextTick(() => {
-        console.log(this.$refs.mask)
+        // console.log(this.$refs.mask)
         const mask = this.$refs.mask.$el
-        console.log(mask)
+        mask.style.cursor="e-resize"
+        // console.log(mask)
         mask.addEventListener('mousemove', this.resizeMove)
         mask.addEventListener('mouseup', this.resizeUp)
       })
     },
     resizeMove(e) {
-      console.log(e)
+      // console.log(e)
       const { box } = this.$refs
+      const { width, height } = box.getBoundingClientRect()
       const mask = this.$refs.mask.$el
       switch (this.activeBoundary) {
         case 'l':
+          if (width < 600) break
           box.style.left = `${e.x}px`
           break
         case 'r':
+          if (width < 600) break
           box.style.right = `${document.documentElement.clientWidth -
             e.clientX}px`
           break
         case 't':
+          if (height < 400) break
           box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'b':
+          if (height < 400) break
           box.style.bottom = `${document.documentElement.clientHeight -
             e.clientY}px`
           break
         case 'lt':
+          if (width < 600) break
+          if (height < 400) break
           box.style.left = `${e.clientX}px`
           box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'lb':
+          if (width < 600) break
+          if (height < 400) break
           box.style.left = `${e.clientX}px`
           box.style.bottom = `${document.documentElement.clientHeight -
             e.clientY}px`
           break
         case 'rt':
+          if (width < 600) break
+          if (height < 400) break
           box.style.right = `${document.documentElement.clientWidth -
             e.clientX}px`
           box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'rb':
+          if (width < 600) break
+          if (height < 400) break
           box.style.right = `${document.documentElement.clientWidth -
             e.clientX}px`
           box.style.bottom = `${document.documentElement.clientHeight -
@@ -159,6 +179,9 @@ export default {
       mask.removeEventListener('mousemove', this.move)
       mask.removeEventListener('mouseup', this.resizeUp)
       this.$refs.mask.close()
+      // 用于provide，暂时停用
+      // const { height } = this.$refs.box.getBoundingClientRect()
+      // this.size.height = height
     }
   }
 }

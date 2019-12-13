@@ -1,9 +1,9 @@
 <template>
   <box app="chat">
-    <div>
+    <!-- <div>
       <el-button @click="onRoomsShow">rooms</el-button>
       <el-button @click="onContactsShow">contacts</el-button>
-    </div>
+    </div> -->
     <div class="chat">
       <div class="left">
         <component :is="leftBar"></component>
@@ -43,11 +43,11 @@ export default {
   display: flex;
   height: 100%;
   .left {
-    width: 200px;
-    background-color: red;
+    width: 240px;
+    // background-color: red;
   }
   .right {
-    background-color: blue;
+    // background-color: blue;
   }
 }
 </style>
