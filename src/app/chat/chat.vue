@@ -1,5 +1,5 @@
 <template>
-  <box>
+  <box app="chat">
     <div>
       <el-button @click="onRoomsShow">rooms</el-button>
       <el-button @click="onContactsShow">contacts</el-button>

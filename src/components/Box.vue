@@ -1,9 +1,10 @@
 <template>
   <div :id="id" class="box" ref="box">
-    <div class="drag-header" @click.prevent="() => void 0" ref="dragHeader">
+    <div class="drag-header" @mousedown="onDrag" @click.prevent="() => void 0">
       <span class="dot-red" @click="onClose"></span>
       <span class="dot-yellow" @click="onScale"></span>
       <span class="dot-green" @click="onHidden"></span>
+      <span class="title">{{ app }}</span>
     </div>
     <div class="main">
       <slot></slot>
@@ -22,9 +23,6 @@
 </template>
 
 <script>
-// import * as Rx from 'rxjs'
-import { fromEvent } from 'rxjs'
-import { map, takeUntil, concatAll } from 'rxjs/operators'
 export default {
   name: '',
   props: {
@@ -37,6 +35,8 @@ export default {
     return {
       initialX: 0,
       initialY: 0,
+      initialW: 0,
+      initialH: 0,
       position: {},
       pos: {},
       id: 'box-' + Date.now(),
@@ -53,51 +53,29 @@ export default {
       }
     }
   },
-  mounted() {
-    const box = this.$el
-    const body = document.body
-    const dragHeader = this.$refs.dragHeader
-    const mouseDown = fromEvent(dragHeader, 'mousedown')
-    const mouseMove = fromEvent(body, 'mousemove')
-    const mouseUp = fromEvent(body, 'mouseup')
-
-    mouseDown
-      .pipe(
-        map(e => {
-          const { left, top } = box.getBoundingClientRect()
-          this.initialX = e.clientX - left
-          this.initialY = e.clientY - top
-          return mouseMove.pipe(takeUntil(mouseUp))
-        }),
-        concatAll(),
-        map(event => ({ x: event.clientX, y: event.clientY }))
-      )
-      // .map(() => mouseMove.takeUntil(mouseUp))
-      // .concatAll()
-      // .map(event => ({ x: event.clientX, y: event.clientY }))
-      .subscribe(pos => {
-        box.style.left = `${pos.x - this.initialX}px`
-        box.style.top = `${
-          pos.y - this.initialY > 32 ? pos.y - this.initialY : 32
-        }px`
-      })
-  },
   methods: {
     onDrag(ev) {
       const { box } = this.$refs
-      const { left, top } = box.getBoundingClientRect()
+      const { left, top, width, height } = box.getBoundingClientRect()
       this.initialX = ev.clientX - left
-      this.initialY = ev.clientY - top
+      this.initialY = ev.clientY - top + 32
+      this.initialW = width
+      this.initialH = height
       this.isActive = true
       document.addEventListener('mousemove', this.dragMove)
       document.addEventListener('mouseup', this.dragUp)
     },
     dragMove(ev) {
       const { box } = this.$refs
-      box.style.left = `${ev.clientX - this.initialX}px`
-      box.style.top = `${
-        ev.clientY - this.initialY > 32 ? ev.clientY - this.initialY : 32
-      }px`
+      const left = ev.clientX - this.initialX
+      const top =
+        ev.clientY - this.initialY > 0 ? ev.clientY - this.initialY : 0
+      const right = document.documentElement.clientWidth - left - this.initialW
+      const bottom = document.documentElement.clientHeight - top - this.initialH
+      box.style.left = `${left}px`
+      box.style.top = `${top}px`
+      box.style.right = `${right}px`
+      box.style.bottom = `${bottom}px`
     },
     dragUp() {
       this.isActive = false
@@ -106,18 +84,13 @@ export default {
     },
     onScale() {
       const { classList } = this.$refs.box
-
       if (classList.contains('cover')) {
         classList.remove('cover')
-        this.position = this.pos
+        setTimeout(() => {
+          classList.remove('transition')
+        }, 350)
       } else {
-        const {
-          top,
-          left,
-          width,
-          height
-        } = this.$refs.box.getBoundingClientRect()
-        this.pos = { top, left, width, height }
+        classList.add('transition')
         classList.add('cover')
       }
     },
@@ -138,8 +111,8 @@ export default {
     },
     resizeMove(e) {
       console.log(e)
-      // const { box } = this.$refs
-      const box = document.querySelector(`#${this.id}`)
+      const { box } = this.$refs
+      const mask = this.$refs.mask.$el
       switch (this.activeBoundary) {
         case 'l':
           box.style.left = `${e.x}px`
@@ -149,7 +122,7 @@ export default {
             e.clientX}px`
           break
         case 't':
-          box.style.top = `${e.clientY}px`
+          box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'b':
           box.style.bottom = `${document.documentElement.clientHeight -
@@ -157,7 +130,7 @@ export default {
           break
         case 'lt':
           box.style.left = `${e.clientX}px`
-          box.style.top = `${e.clientY}px`
+          box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'lb':
           box.style.left = `${e.clientX}px`
@@ -167,7 +140,7 @@ export default {
         case 'rt':
           box.style.right = `${document.documentElement.clientWidth -
             e.clientX}px`
-          box.style.top = `${e.clientY}px`
+          box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'rb':
           box.style.right = `${document.documentElement.clientWidth -
@@ -177,7 +150,7 @@ export default {
           break
         default:
       }
-      // document.addEventListener('mouseup', this.resizeUp)
+      mask.addEventListener('mouseup', this.resizeUp)
     },
     resizeUp() {
       // const { $el: mask } = this.$refs.mask
@@ -204,9 +177,10 @@ export default {
   // height: 600px;
   border-radius: $radius;
   box-shadow: $shadow;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  // overflow: hidden;
+  // transition: all 0.3s ease;
   .drag-header {
+    position: relative;
     display: flex;
     align-items: center;
     height: 40px;
@@ -236,6 +210,12 @@ export default {
         margin-left: 8px;
         cursor: pointer;
       }
+    }
+    .title {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
   }
 
@@ -309,9 +289,12 @@ export default {
   }
 }
 .cover {
-  left: 0;
-  right: 0;
-  top: 32px;
-  bottom: 0;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+}
+.transition {
+  transition: all 0.3s ease;
 }
 </style>
