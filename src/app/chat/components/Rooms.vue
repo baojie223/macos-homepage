@@ -1,5 +1,5 @@
 <template>
-  <div class="rooms" ref="wrapper">
+  <scroll class="rooms">
     <ul class="list">
       <li
         v-for="(item, i) in list"
@@ -18,7 +18,7 @@
         <div class="cover" @click="onSelect(i)"></div>
       </li>
     </ul>
-  </div>
+  </scroll>
 </template>
 
 <script>
@@ -66,7 +66,6 @@ const list = [
   }
 ]
 export default {
-  // inject: ['size'],
   name: '',
   data() {
     return {
@@ -75,30 +74,10 @@ export default {
       scroll: null
     }
   },
-  // watch: {
-  //   size: {
-  //     handler() {
-  //       this.scroll.refresh()
-  //     },
-  //     deep: true
-  //   }
-  // },
-  mounted() {
-    this.$nextTick(() => {
-      const { wrapper } = this.$refs
-      this.scroll = new BScroll(wrapper, {
-        scrollY: true,
-        click: true,
-        mouseWheel: true,
-        observeDom: true
-        // scrollbar: true
-      })
-      console.log(wrapper, this.scroll)
-    })
-  },
   methods: {
     onSelect(i) {
       this.current = i
+      this.$store.dispatch('chat/setRoom', this.list[i])
     }
   },
   filters: {
@@ -132,11 +111,10 @@ export default {
 
 <style lang="scss" scoped>
 .rooms {
-  height: 100%;
   background: #fff;
-  overflow: hidden;
 }
 .list {
+  position: relative;
   display: flex;
   flex-direction: column;
   .item {
@@ -146,6 +124,7 @@ export default {
     justify-content: space-around;
     width: 100%;
     height: 80px;
+    transition: all 0.3s ease;
     .text {
       width: 130px;
       height: 100%;
@@ -165,9 +144,22 @@ export default {
       right: 0;
       bottom: 0;
     }
+    &:hover {
+      background: #f8f8f8;
+    }
   }
   .active {
     background-color: #f8f8f8;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: 0;
+    transform: scaleY(0.5);
+    width: 1px;
+    height: 200%;
+    background-color: #f2f6fc;
   }
 }
 </style>

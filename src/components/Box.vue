@@ -18,7 +18,6 @@
     <div class="angle a-lb" @mousedown="onResize($event, 'lb')"></div>
     <div class="angle a-rt" @mousedown="onResize($event, 'rt')"></div>
     <div class="angle a-rb" @mousedown="onResize($event, 'rb')"></div>
-    <my-mask ref="mask"></my-mask>
   </div>
 </template>
 
@@ -70,6 +69,7 @@ export default {
       this.isActive = true
       document.addEventListener('mousemove', this.dragMove)
       document.addEventListener('mouseup', this.dragUp)
+      document.body.style.userSelect = 'none'
     },
     dragMove(ev) {
       const { box } = this.$refs
@@ -77,7 +77,7 @@ export default {
       const top =
         ev.clientY - this.initialY > 0 ? ev.clientY - this.initialY : 0
       const right = document.documentElement.clientWidth - left - this.initialW
-      const bottom = document.documentElement.clientHeight - top - this.initialH
+      const bottom = document.documentElement.clientHeight - top - this.initialH - 32
       box.style.left = `${left}px`
       box.style.top = `${top}px`
       box.style.right = `${right}px`
@@ -87,6 +87,7 @@ export default {
       this.isActive = false
       document.removeEventListener('mousemove', this.dragMove)
       document.removeEventListener('mouseup', this.dragUp)
+      document.body.style.userSelect = 'auto'
     },
     onScale() {
       const { classList } = this.$refs.box
@@ -106,21 +107,24 @@ export default {
     },
     onResize(e, direction) {
       this.activeBoundary = direction
-      this.$refs.mask.open()
-      this.$nextTick(() => {
-        // console.log(this.$refs.mask)
-        const mask = this.$refs.mask.$el
-        mask.style.cursor="e-resize"
-        // console.log(mask)
-        mask.addEventListener('mousemove', this.resizeMove)
-        mask.addEventListener('mouseup', this.resizeUp)
-      })
+      document.addEventListener('mousemove', this.resizeMove)
+      document.addEventListener('mouseup', this.resizeUp)
+      document.body.style.userSelect = 'none'
+      // this.$refs.mask.open()
+      // this.$nextTick(() => {
+      //   // console.log(this.$refs.mask)
+      //   // const mask = this.$refs.mask.$el
+      //   // mask.style.cursor="e-resize"
+      //   // console.log(mask)
+      //   document.addEventListener('mousemove', this.resizeMove)
+      //   document.addEventListener('mouseup', this.resizeUp)
+      // })
     },
     resizeMove(e) {
       // console.log(e)
       const { box } = this.$refs
       const { width, height } = box.getBoundingClientRect()
-      const mask = this.$refs.mask.$el
+      // const mask = this.$refs.mask.$el
       switch (this.activeBoundary) {
         case 'l':
           if (width < 600) break
@@ -170,15 +174,16 @@ export default {
           break
         default:
       }
-      mask.addEventListener('mouseup', this.resizeUp)
+      document.addEventListener('mouseup', this.resizeUp)
     },
     resizeUp() {
       // const { $el: mask } = this.$refs.mask
       // console.log(mask)
-      const mask = this.$refs.mask.$el
-      mask.removeEventListener('mousemove', this.move)
-      mask.removeEventListener('mouseup', this.resizeUp)
-      this.$refs.mask.close()
+      // const mask = this.$refs.mask.$el
+      document.removeEventListener('mousemove', this.resizeMove)
+      document.removeEventListener('mouseup', this.resizeUp)
+      document.body.style.userSelect = 'auto'
+      // this.$refs.mask.close()
       // 用于provide，暂时停用
       // const { height } = this.$refs.box.getBoundingClientRect()
       // this.size.height = height
@@ -208,7 +213,7 @@ export default {
     align-items: center;
     height: 40px;
     padding: 0 16px;
-    background: linear-gradient(top, #e6e6e6 0, #d5d5d5 100%);
+    background: linear-gradient(to bottom, #e6e6e6 0, #d5d5d5 100%);
     .dot {
       &-red {
         width: 16px;
