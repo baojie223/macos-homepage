@@ -210,6 +210,7 @@ export default {
   .drag-header {
     position: relative;
     display: flex;
+    flex: none;
     align-items: center;
     height: 40px;
     padding: 0 16px;
@@ -320,7 +321,7 @@ export default {
   left: 0 !important;
   right: 0 !important;
   top: 0 !important;
-  bottom: 0 !important;
+  bottom: 16px !important;
 }
 .transition {
   transition: all 0.3s ease;

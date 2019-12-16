@@ -17,7 +17,7 @@ export default {
     if (document.querySelector('#iconfont')) return
     const script = document.createElement('script')
     script.id = 'iconfont'
-    script.src = 'https://at.alicdn.com/t/font_1535173_ppoqaw5xv08.js'
+    script.src = 'https://at.alicdn.com/t/font_1535173_jrppd7mzgv.js'
     document.head.appendChild(script)
   }
 }

@@ -1,6 +1,7 @@
 <template>
   <div class="app-bar">
     <icon type="chat" style="width: 60px; height: 60px; cursor: pointer" @click.native="open('chat')"></icon>
+    <icon type="md" style="width: 60px; height: 60px; cursor: pointer; margin-left: 16px" @click.native="open('markdown')"></icon>
   </div>
 </template>
 

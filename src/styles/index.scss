@@ -6,11 +6,6 @@
   src: url('/PingFang.ttf')
 }
 
-* {
-  margin: 0;
-  padding: 0;
-}
-
 html,
 body,
 #app {
@@ -21,8 +16,15 @@ body,
   color: $--color-text-primary;
 }
 
-ul {
-  list-style: none;
+*:not(.md) {
+  > ul {
+    list-style: none;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
 }
 
 div {
