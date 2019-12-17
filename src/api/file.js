@@ -1,7 +1,7 @@
 import service from '../utils/request'
 
-const getPdf = html => {
-  return service.post('/file/pdf', { html })
+const postPdf = body => {
+  return service.post('/file/pdf', body)
 }
 
-export { getPdf }
+export { postPdf }

@@ -9,13 +9,20 @@
     </div>
     <div class="main">
       <textarea v-model="input" class="bg in"></textarea>
-      <div v-html="output" class="bg out md" ref="out"></div>
+      <div v-html="output" class="bg out md markdown-body" ref="out"></div>
     </div>
   </box>
 </template>
 
 <script>
-import { getPdf } from '../../api/file'
+const download = (blobUrl, name) => {
+  const a = document.createElement('a')
+  a.download = name
+  a.href = blobUrl
+  a.click()
+}
+import 'github-markdown-css/github-markdown.css'
+import { postPdf } from '../../api/file'
 import * as html2pdf from 'html2pdf.js'
 import MarkdownIt from 'markdown-it'
 export default {
@@ -50,22 +57,14 @@ export default {
     },
     async exportPdf() {
       try {
-        const res = await getPdf(this.output)
-        console.log(res)
-        const link = document.createElement('a')
-        const blob = new Blob([res])
-        const href = URL.createObjectURL(blob)
-        link.style.display = 'none'
-        link.href = href
-        link.download = this.title + '.pdf'
-        link.click()
-        link.remove()
-        URL.revokeObjectURL(blob)
+        await postPdf({ html: this.output })
+        const a = document.createElement('a')
+        a.href = `http://localhost:3000/api/file/pdf?title=${this.title}.pdf`
+        a.click()
+        a.remove()
       } catch (err) {
         console.log(err)
       }
-
-      // html2pdf().from(this.$refs.out).save(this.title)
     }
   }
 }

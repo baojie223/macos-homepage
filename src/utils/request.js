@@ -12,6 +12,7 @@ service.interceptors.request.use(cfg => {
 })
 
 service.interceptors.response.use(res => {
+  console.log(res)
   return Promise.resolve(res.data)
 }, err => {
   return Promise.reject(err)
