@@ -1,11 +1,13 @@
 import Vue from 'vue'
-import BIcon from '@/components/BIcon.vue'
+import Icon from '../components/Icon.vue'
 import Mask from '../plugins/mask'
-// import RightMenu from '../plugins/rightMenu'
 import Box from '../components/Box.vue'
+import Empty from '../components/Empty.vue'
+import Scroll from '../components/Scroll.vue'
 
-Vue.component('b-icon', BIcon)
-// Vue.use(RightMenu)
+Vue.component('icon', Icon)
 Vue.component('box', Box)
+Vue.component('empty', Empty)
+Vue.component('scroll', Scroll)
 
 Vue.use(Mask)

@@ -1,9 +1,10 @@
 <template>
   <div :id="id" class="box" ref="box">
-    <div class="drag-header" @click.prevent="() => void 0" @mousedown="onMouseDown($event)">
+    <div class="drag-header" @mousedown="onDrag" @click.prevent="() => void 0">
       <span class="dot-red" @click="onClose"></span>
       <span class="dot-yellow" @click="onScale"></span>
       <span class="dot-green" @click="onHidden"></span>
+      <span class="title">{{ app }}</span>
     </div>
     <div class="main">
       <slot></slot>
@@ -17,12 +18,16 @@
     <div class="angle a-lb" @mousedown="onResize($event, 'lb')"></div>
     <div class="angle a-rt" @mousedown="onResize($event, 'rt')"></div>
     <div class="angle a-rb" @mousedown="onResize($event, 'rb')"></div>
-    <my-mask ref="mask"></my-mask>
   </div>
 </template>
 
 <script>
 export default {
+  // provide() {
+  //   return {
+  //     size: this.size
+  //   }
+  // },
   name: '',
   props: {
     app: {
@@ -34,51 +39,65 @@ export default {
     return {
       initialX: 0,
       initialY: 0,
-      isDrag: false,
-      position: {},
-      pos: {},
-      id: Date.now(),
-      left: 0,
-      width: 0,
-      realLeft: 'calc(50% - 400px)',
-      activeBoundary: null
+      initialW: 0,
+      initialH: 0,
+      id: 'box-' + Date.now(),
+      activeBoundary: null,
+      isActive: false,
+      size: {
+        height: 600
+      }
+    }
+  },
+  watch: {
+    isActive(newVal) {
+      if (newVal) {
+        this.$refs.box.style.zIndex = 50
+      } else {
+        this.$refs.box.style.zIndex = 49
+      }
     }
   },
   methods: {
-    onMouseDown(ev) {
+    onDrag(ev) {
       const { box } = this.$refs
-      const { left, top } = box.getBoundingClientRect()
+      const { left, top, width, height } = box.getBoundingClientRect()
       this.initialX = ev.clientX - left
-      this.initialY = ev.clientY - top
-      this.isDrag = true
-      document.addEventListener('mousemove', this.onMouseMove)
-      document.addEventListener('mouseup', this.onMouseUp)
+      this.initialY = ev.clientY - top + 32
+      this.initialW = width
+      this.initialH = height
+      this.isActive = true
+      document.addEventListener('mousemove', this.dragMove)
+      document.addEventListener('mouseup', this.dragUp)
+      document.body.style.userSelect = 'none'
     },
-    onMouseMove(ev) {
+    dragMove(ev) {
       const { box } = this.$refs
-      box.style.left = `${ev.clientX - this.initialX}px`
-      box.style.top = `${
-        ev.clientY - this.initialY > 32 ? ev.clientY - this.initialY : 32
-      }px`
+      const left = ev.clientX - this.initialX
+      const top =
+        ev.clientY - this.initialY > 0 ? ev.clientY - this.initialY : 0
+      const right = document.documentElement.clientWidth - left - this.initialW
+      const bottom = document.documentElement.clientHeight - top - this.initialH - 32
+      box.style.left = `${left}px`
+      box.style.top = `${top}px`
+      box.style.right = `${right}px`
+      box.style.bottom = `${bottom}px`
     },
-    onMouseUp() {
-      document.removeEventListener('mousemove', this.onMouseMove)
-      document.removeEventListener('mouseup', this.onMouseUp)
+    dragUp() {
+      this.isActive = false
+      document.removeEventListener('mousemove', this.dragMove)
+      document.removeEventListener('mouseup', this.dragUp)
+      document.body.style.userSelect = 'auto'
     },
     onScale() {
       const { classList } = this.$refs.box
-
       if (classList.contains('cover')) {
         classList.remove('cover')
-        this.position = this.pos
+        setTimeout(() => {
+          classList.remove('transition')
+        }, 350)
       } else {
-        const {
-          top,
-          left,
-          width,
-          height
-        } = this.$refs.box.getBoundingClientRect()
-        this.pos = { top, left, width, height }
+        classList.add('transition')
         classList.add('cover')
       }
     },
@@ -88,57 +107,66 @@ export default {
     },
     onResize(e, direction) {
       this.activeBoundary = direction
-      // console.log(e)
-      // const {
-      //   left,
-      //   right,
-      //   top,
-      //   bottom,
-      //   width
-      // } = this.$refs.box.getBoundingClientRect()
-      // this.left = left
-      // this.width = width
-      // this.$refs.mask.$el.style.cursor = 'pointer'
+      document.addEventListener('mousemove', this.resizeMove)
+      document.addEventListener('mouseup', this.resizeUp)
+      document.body.style.userSelect = 'none'
       // this.$refs.mask.open()
-      // const { $el: mask } = this.$refs.mask
-      document.addEventListener('mousemove', this.move)
-      document.addEventListener('mouseup', this.up)
+      // this.$nextTick(() => {
+      //   // console.log(this.$refs.mask)
+      //   // const mask = this.$refs.mask.$el
+      //   // mask.style.cursor="e-resize"
+      //   // console.log(mask)
+      //   document.addEventListener('mousemove', this.resizeMove)
+      //   document.addEventListener('mouseup', this.resizeUp)
+      // })
     },
-    onResizeStart() {
-      console.log()
-    },
-    move(e) {
+    resizeMove(e) {
+      // console.log(e)
       const { box } = this.$refs
+      const { width, height } = box.getBoundingClientRect()
+      // const mask = this.$refs.mask.$el
       switch (this.activeBoundary) {
         case 'l':
-          box.style.left = `${e.clientX}px`
+          if (width < 600) break
+          box.style.left = `${e.x}px`
           break
         case 'r':
+          if (width < 600) break
           box.style.right = `${document.documentElement.clientWidth -
             e.clientX}px`
           break
         case 't':
-          box.style.top = `${e.clientY}px`
+          if (height < 400) break
+          box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'b':
+          if (height < 400) break
           box.style.bottom = `${document.documentElement.clientHeight -
             e.clientY}px`
           break
         case 'lt':
+          if (width < 600) break
+          if (height < 400) break
           box.style.left = `${e.clientX}px`
-          box.style.top = `${e.clientY}px`
+          box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'lb':
+          if (width < 600) break
+          if (height < 400) break
           box.style.left = `${e.clientX}px`
           box.style.bottom = `${document.documentElement.clientHeight -
             e.clientY}px`
           break
         case 'rt':
+          if (width < 600) break
+          if (height < 400) break
           box.style.right = `${document.documentElement.clientWidth -
             e.clientX}px`
-          box.style.top = `${e.clientY}px`
+          box.style.top = `${e.clientY - 32 > 0 ? e.clientY - 32 : 0}px`
           break
         case 'rb':
+          if (width < 600) break
+          if (height < 400) break
           box.style.right = `${document.documentElement.clientWidth -
             e.clientX}px`
           box.style.bottom = `${document.documentElement.clientHeight -
@@ -146,10 +174,19 @@ export default {
           break
         default:
       }
+      document.addEventListener('mouseup', this.resizeUp)
     },
-    up() {
+    resizeUp() {
       // const { $el: mask } = this.$refs.mask
-      document.removeEventListener('mousemove', this.move)
+      // console.log(mask)
+      // const mask = this.$refs.mask.$el
+      document.removeEventListener('mousemove', this.resizeMove)
+      document.removeEventListener('mouseup', this.resizeUp)
+      document.body.style.userSelect = 'auto'
+      // this.$refs.mask.close()
+      // 用于provide，暂时停用
+      // const { height } = this.$refs.box.getBoundingClientRect()
+      // this.size.height = height
     }
   }
 }
@@ -168,14 +205,16 @@ export default {
   // height: 600px;
   border-radius: $radius;
   box-shadow: $shadow;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  // overflow: hidden;
+  // transition: all 0.3s ease;
   .drag-header {
+    position: relative;
     display: flex;
+    flex: none;
     align-items: center;
     height: 40px;
     padding: 0 16px;
-    background: linear-gradient(top, #e6e6e6 0, #d5d5d5 100%);
+    background: linear-gradient(to bottom, #e6e6e6 0, #d5d5d5 100%);
     .dot {
       &-red {
         width: 16px;
@@ -200,6 +239,12 @@ export default {
         margin-left: 8px;
         cursor: pointer;
       }
+    }
+    .title {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
   }
 
@@ -273,9 +318,12 @@ export default {
   }
 }
 .cover {
-  left: 0;
-  right: 0;
-  top: 32px;
-  bottom: 0;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 16px !important;
+}
+.transition {
+  transition: all 0.3s ease;
 }
 </style>

@@ -6,21 +6,25 @@
   src: url('/PingFang.ttf')
 }
 
-* {
-  margin: 0;
-  padding: 0;
-}
-
 html,
 body,
 #app {
   width: 100%;
   height: 100%;
   font-family: PingFang SC;
+  font-weight: 300;
+  color: $--color-text-primary;
 }
 
-ul {
-  list-style: none;
+// *:not(.md) {
+//   > ul {
+//     list-style: none;
+//   }
+// }
+
+* {
+  margin: 0;
+  padding: 0;
 }
 
 div {
